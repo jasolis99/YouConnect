@@ -1,36 +1,51 @@
-import AppLayout from 'components/AppLayout'
 import Avatar from 'components/Avatar'
-import FakeTweet from 'fake-tweet'
+import Posts from 'components/Post'
 import { fetchLastPosts } from 'firebase/client'
 import useUser from 'hooks/useUser'
+import HomeIcon from 'Icons/home'
+import NewPost from 'Icons/newPost'
+import Search from 'Icons/search'
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
 export default function Home() {
   const [timeline, setTimeline] = useState([])
   const user = useUser()
   useEffect(() => {
-    user && fetchLastPosts().then(setTimeline)
-    console.log(timeline)
+    if (user) {
+      const unsuscribe = fetchLastPosts(setTimeline)
+      return () => unsuscribe && unsuscribe()
+    }
   }, [user])
   return (
     <>
-      <AppLayout>
-        <div className="header">
-          <Avatar />
-          <h2>Inicio</h2>
-        </div>
-        <div>
-          {timeline.map((post) => {
-            post.date = 'hoy'
-            // eslint-disable-next-line react/jsx-key
-            return <FakeTweet config={post} />
-          })}
-        </div>
-        <nav>
-          <img src="/twitterhome_104282.png" />
-          <img src="/search_104498.png" />
-        </nav>
-      </AppLayout>
+      <div className="header">
+        <Avatar />
+        <h2>Inicio</h2>
+      </div>
+      <div>
+        {timeline.map((post) => {
+          // eslint-disable-next-line react/jsx-key
+          return <Posts post={post} />
+        })}
+      </div>
+      <nav>
+        <Link href="/home">
+          <a>
+            <HomeIcon width={32} height={32} stroke="#09f" />
+          </a>
+        </Link>
+        <Link href="/home">
+          <a>
+            <Search width={32} height={32} stroke="#09f" />
+          </a>
+        </Link>
+        <Link href="/compose/post">
+          <a>
+            <NewPost width={32} height={32} stroke="#09f" />
+          </a>
+        </Link>
+      </nav>
       <style jsx>
         {`
           .header {
@@ -56,6 +71,11 @@ export default function Home() {
             display: flex;
             justify-content: space-around;
             background-color: #fff;
+          }
+          nav a:hover {
+            background: radial-gradient(#0099ff22 15%, transparent 16%);
+            background-size: 180px 180px;
+            background-position: center;
           }
         `}
       </style>

@@ -16,18 +16,26 @@ export const addPost = (info) => {
   return db.collection('posts').add(info)
 }
 
-export const fetchLastPosts = () => {
+export const fetchLastPosts = (callback) => {
   return db
     .collection('posts')
-    .get()
-    .then((snapshot) => {
-      return snapshot.docs.map((doc) => {
-        const data = doc.data()
-        const id = doc.id
-        return {
-          id,
-          ...data,
-        }
-      })
+    .orderBy('firebaseDate', 'desc')
+    .onSnapshot(({ docs }) => {
+      const newPosts = docs.map(mapPostsFromFirebase)
+      callback(newPosts)
     })
+}
+const mapPostsFromFirebase = (doc) => {
+  const data = doc.data()
+  const id = doc.id
+  data.firebaseDate = data.firebaseDate.toDate()
+  return {
+    id,
+    ...data,
+  }
+}
+export const uploadImage = (file) => {
+  const storageRef = firebase.storage().ref(`images/${file.name}`)
+  const task = storageRef.put(file)
+  return task
 }
